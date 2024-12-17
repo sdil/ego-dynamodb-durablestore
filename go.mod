@@ -1,4 +1,4 @@
-module ego-dynamodb-durablestore
+module github.com/sdil/ego-dynamodb-durablestore
 
 go 1.23.0
 

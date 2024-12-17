@@ -53,10 +53,8 @@ func NewStateStore() *DynamoDurableStore {
 }
 
 // Connect connects to the journal store
-// Initialize DynamoDB client
+// No connection is needed because the client is stateless
 func (d DynamoDurableStore) Connect(ctx context.Context) error {
-	// Load AWS configuration
-
 	return nil
 }
 

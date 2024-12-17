@@ -42,10 +42,11 @@ type DynamoDurableStore struct {
 var _ persistence.StateStore = (*DynamoDurableStore)(nil)
 
 // Connect connects to the journal store
+// Initialize DynamoDB client
 func (d DynamoDurableStore) Connect(ctx context.Context) error {
-	// Initialize DynamoDB client
+
 	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-west-2")) // Specify your AWS region
+	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to load SDK config, %v", err)
 	}

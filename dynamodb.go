@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -32,9 +31,6 @@ type StateItem struct {
 const (
 	tableName = "states_store"
 )
-
-var onceAwsConfig sync.Once
-var onceDdbClient sync.Once
 
 // DynamoDurableStore implements the DurableStore interface
 // and helps persist states in a DynamoDB
@@ -67,11 +63,8 @@ func (DynamoDurableStore) Disconnect(ctx context.Context) error {
 }
 
 // Ping verifies a connection to the database is still alive, establishing a connection if necessary.
+// There is no need to ping because the client is stateless
 func (d DynamoDurableStore) Ping(ctx context.Context) error {
-	_, err := d.client.ListTables(ctx, &dynamodb.ListTablesInput{})
-	if err != nil {
-		return fmt.Errorf("unable to connect to DynamoDB, %v", err)
-	}
 	return nil
 }
 

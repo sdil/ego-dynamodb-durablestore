@@ -41,18 +41,21 @@ type DynamoDurableStore struct {
 // enforce interface implementation
 var _ persistence.StateStore = (*DynamoDurableStore)(nil)
 
+func NewStateStore() *DynamoDurableStore {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return nil
+	}
+
+	return &DynamoDurableStore{
+		client: dynamodb.NewFromConfig(cfg),
+	}
+}
+
 // Connect connects to the journal store
 // Initialize DynamoDB client
 func (d DynamoDurableStore) Connect(ctx context.Context) error {
-
 	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to load SDK config, %v", err)
-	}
-
-	// Initialize DynamoDB client
-	d.client = dynamodb.NewFromConfig(cfg)
 
 	return nil
 }
@@ -66,6 +69,10 @@ func (DynamoDurableStore) Disconnect(ctx context.Context) error {
 // Ping verifies a connection to the database is still alive, establishing a connection if necessary.
 // There is no need to ping because the client is stateless
 func (d DynamoDurableStore) Ping(ctx context.Context) error {
+	_, err := d.client.ListTables(ctx, &dynamodb.ListTablesInput{})
+	if err != nil {
+		return fmt.Errorf("failed to fetch tables in the dynamodb: %w", err)
+	}
 	return nil
 }
 
@@ -78,11 +85,9 @@ func (d DynamoDurableStore) WriteState(ctx context.Context, state *egopb.Durable
 	// Define the item to upsert
 	item := map[string]types.AttributeValue{
 		"PersistenceID": &types.AttributeValueMemberS{Value: state.GetPersistenceId()}, // Partition key
-		"VersionNumber": &types.AttributeValueMemberN{Value: state.GetVersionNumber()},
 		"StatePayload":  &types.AttributeValueMemberB{Value: bytea},
 		"StateManifest": &types.AttributeValueMemberS{Value: manifest},
-		"Timestamp":     &types.AttributeValueMemberS{Value: state.GetTimestamp()},
-		"ShardNumber":   &types.AttributeValueMemberS{Value: state.GetShard()},
+		"Timestamp":     &types.AttributeValueMemberS{Value: string(state.GetTimestamp())},
 	}
 
 	_, err := d.client.PutItem(ctx, &dynamodb.PutItemInput{
@@ -100,7 +105,7 @@ func (d DynamoDurableStore) WriteState(ctx context.Context, state *egopb.Durable
 func (d DynamoDurableStore) GetLatestState(ctx context.Context, persistenceID string) (*egopb.DurableState, error) {
 	// Get criteria
 	key := map[string]types.AttributeValue{
-		"PK": &types.AttributeValueMemberS{Value: persistenceID},
+		"PersistenceID": &types.AttributeValueMemberS{Value: persistenceID},
 	}
 
 	// Perform the GetItem operation

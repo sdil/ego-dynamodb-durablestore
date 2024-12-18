@@ -1,12 +1,6 @@
 # eGo DynamoDB Durable Store Plugin
 
-This plugin provides a DynamoDB-based durable state store for the eGo framework. It allows you to persist the state of your eGo actors in an AWS DynamoDB table.
-
-## Features
-
-- **Durable State Storage**: Persist the full state of your eGo actors in DynamoDB.
-- **Stateless Client**: The DynamoDB client used in this plugin is stateless, meaning no connection management is required.
-- **Versioning**: Each state is versioned to ensure consistency.
+This plugin provides a DynamoDB-based durable state store for the eGo framework. It allows you to persist the full state of your eGo actors state in an AWS DynamoDB table.
 
 ## Installation
 
@@ -18,9 +12,7 @@ go get github.com/sdil/ego-dynamodb-durablestore
 
 ## Usage
 
-Configuration
-
-First, ensure that you have states_store DynamoDB table in your AWS account.
+First, ensure that you have states_store DynamoDB table in your AWS account. Set PersistenceID as its Partition Key.
 
 And then, you can initialize DynamoDB durable store like below:
 
@@ -87,6 +79,8 @@ To run the example, ensure you have a DynamoDB table named states_store with the
 ```bash
 go run .
 ```
+
+You can open DynamoDB table explorer and observe the data being inserted into your DynamoDB table.
 
 ## Schema
 
